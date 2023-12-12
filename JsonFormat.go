@@ -17,6 +17,7 @@ package dnstap
 import (
 	"bytes"
 	"encoding/json"
+	b64 "encoding/base64"
 	"fmt"
 	"net"
 	"time"
@@ -50,6 +51,8 @@ type jsonMessage struct {
 	ResponsePort    uint32    `json:"response_port,omitempty"`
 	QueryZone       string    `json:"query_zone,omitempty"`
 	QueryMessage    string    `json:"query_message,omitempty"`
+	ResponseSize    int       `json:"size,omitempty"`
+	ResponseB64     string    `json:"b64,omitempty"`
 	ResponseMessage string    `json:"response_message,omitempty"`
 }
 
@@ -109,6 +112,8 @@ func convertJSONMessage(m *Message) jsonMessage {
 
 	if m.ResponseMessage != nil {
 		msg := new(dns.Msg)
+		jMsg.ResponseSize = len(m.ResponseMessage)
+		jMsg.ResponseB64 = b64.StdEncoding.EncodeToString(m.ResponseMessage)
 		err := msg.Unpack(m.ResponseMessage)
 		if err != nil {
 			jMsg.ResponseMessage = fmt.Sprintf("parse failed: %v", err)
